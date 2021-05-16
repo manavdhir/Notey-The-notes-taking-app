@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:notey_the_notes_application/database_helper.dart';
+import 'package:notey_the_notes_application/helper/noteModel.dart';
 
 class AddNotesScreen extends StatefulWidget {
   @override
@@ -11,7 +13,20 @@ class AddNotesScreen extends StatefulWidget {
 class _AddNotesScreenState extends State<AddNotesScreen> {
   TextEditingController title = TextEditingController();
   TextEditingController description = TextEditingController();
+  TextEditingController video = TextEditingController();
+
   CollectionReference ref = FirebaseFirestore.instance.collection('notes');
+  bool value = false;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  saveNoteOffline(NoteModel note) {
+    DatabaseProvider.db.addNewNote(note);
+    print('new note added sucessfully');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -123,16 +138,97 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
                           ),
                         ),
                       ),
+                      // to add the video link
+                      Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(5.0),
+                            child: ListTile(
+                              title: Text('Include video link'),
+                              leading: Checkbox(
+                                  checkColor: Colors.black,
+                                  activeColor: Color(0XffFFD39E),
+                                  value: value,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      this.value = value;
+                                    });
+                                  }),
+                            ),
+                          ),
+                          Visibility(
+                              visible: value,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.all(10.0),
+                                    child: Text(
+                                      "Add the link to the video",
+                                      style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                  //video textfield
+                                  Padding(
+                                    padding: const EdgeInsets.all(10.0),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(10),
+                                        color: Colors.grey.withOpacity(0.2),
+                                      ),
+                                      padding: EdgeInsets.all(10),
+                                      child: TextField(
+                                        controller: video,
+                                        style: TextStyle(fontSize: 18),
+                                        decoration: InputDecoration(
+                                            hintText: 'Video link',
+                                            border: InputBorder.none),
+                                      ),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.all(10.0),
+                                    child: Text(
+                                      'Only add those link that start with https://...',
+                                      style: TextStyle(color: Colors.grey),
+                                    ),
+                                  )
+                                ],
+                              ))
+                        ],
+                      ),
                       //add note to firebase button
                       InkWell(
                         onTap: () {
+                          NoteModel note = NoteModel(
+                              title: title.text,
+                              body: description.text,
+                              creation_date: DateTime.now());
+                          saveNoteOffline(note);
                           if (title.text == '') {
                             Fluttertoast.showToast(
                                 msg: "Title cannot be empty");
+                          }
+                          if (value == true && video.text == '') {
+                            Fluttertoast.showToast(
+                                msg: "video link cannot be empty");
+                          }
+                          if (value == false || video.text == '') {
+                            ref.add({
+                              'title': title.text,
+                              'description': description.text,
+                              'video': ''
+                            }).whenComplete(() => {
+                                  Fluttertoast.showToast(msg: "Note saved"),
+                                  Navigator.pop(context)
+                                });
                           } else {
                             ref.add({
                               'title': title.text,
-                              'description': description.text
+                              'description': description.text,
+                              'video': video.text
                             }).whenComplete(() => {
                                   Fluttertoast.showToast(msg: "Note saved"),
                                   Navigator.pop(context)
@@ -159,6 +255,9 @@ class _AddNotesScreenState extends State<AddNotesScreen> {
                                     BorderRadius.all(Radius.circular(10))),
                           ),
                         ),
+                      ),
+                      SizedBox(
+                        height: 40,
                       )
                     ],
                   ),

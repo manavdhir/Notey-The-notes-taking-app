@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:connectivity/connectivity.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -33,10 +34,25 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  // bool isConnected = false;
+  //StreamSubscription sub;
+
   @override
   void initState() {
     super.initState();
+    // sub = Connectivity().onConnectivityChanged.listen((event) {
+    //   setState(() {
+    //     // ignore: unrelated_type_equality_checks
+    //     isConnected = (event != ConnectivityResult.none);
+    //   });
+    // });
     Timer(Duration(seconds: 4), openOnBoarding);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    //sub.cancel();
   }
 
   @override

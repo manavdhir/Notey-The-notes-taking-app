@@ -6,6 +6,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:notey_the_notes_application/colors.dart';
 import 'package:notey_the_notes_application/screens/HomePage.dart';
+import 'package:notey_the_notes_application/screens/videoScreen.dart';
 
 class EditNote extends StatefulWidget {
   DocumentSnapshot docToEdit;
@@ -17,6 +18,7 @@ class EditNote extends StatefulWidget {
 class _EditNoteState extends State<EditNote> {
   TextEditingController title = TextEditingController();
   TextEditingController description = TextEditingController();
+  TextEditingController videoLink = TextEditingController();
 
   CollectionReference new_ref =
       FirebaseFirestore.instance.collection('deleted notes');
@@ -25,6 +27,9 @@ class _EditNoteState extends State<EditNote> {
   void initState() {
     title = TextEditingController(text: widget.docToEdit['title']);
     description = TextEditingController(text: widget.docToEdit['description']);
+    if (widget.docToEdit['video'] != null) {
+      videoLink = TextEditingController(text: widget.docToEdit['video']);
+    }
     super.initState();
   }
 
@@ -138,7 +143,75 @@ class _EditNoteState extends State<EditNote> {
                           ),
                         ),
                       ),
+
+                      //add video logic
+
+                      Visibility(
+                        visible: widget.docToEdit['video'] != "",
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(10.0),
+                              child: Text(
+                                "Link for the video",
+                                style: TextStyle(
+                                    fontSize: 20, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            //video link textfield
+                            Padding(
+                              padding: const EdgeInsets.all(10.0),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                  color: Colors.grey.withOpacity(0.2),
+                                ),
+                                padding: EdgeInsets.all(10),
+                                child: TextField(
+                                  controller: videoLink,
+                                  style: TextStyle(fontSize: 18),
+                                  decoration: InputDecoration(
+                                      hintText: 'Video link',
+                                      border: InputBorder.none),
+                                ),
+                              ),
+                            ),
+                            //play video button
+                            InkWell(
+                              onTap: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (c) =>
+                                            VideoScreen(videoLink.text)));
+                              },
+                              child: Center(
+                                child: Container(
+                                  margin: EdgeInsets.only(top: 20),
+                                  padding: EdgeInsets.symmetric(vertical: 15),
+                                  width: 300,
+                                  child: Center(
+                                    child: Text(
+                                      "Play Video",
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                  decoration: BoxDecoration(
+                                      color: Colors.green,
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(10))),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+
                       //add note to firebase button
+                      ,
                       InkWell(
                         onTap: () {
                           if (title.text == '') {
@@ -202,6 +275,9 @@ class _EditNoteState extends State<EditNote> {
                           ),
                         ),
                       ),
+                      SizedBox(
+                        height: 40,
+                      )
                     ],
                   ),
                 ),
@@ -225,8 +301,11 @@ class _EditNoteState extends State<EditNote> {
             actions: [
               new FlatButton(
                   onPressed: () {
-                    new_ref.add(
-                        {'title': title.text, 'description': description.text});
+                    new_ref.add({
+                      'title': title.text,
+                      'description': description.text,
+                      'video': videoLink.text
+                    });
                     widget.docToEdit.reference.delete().whenComplete(
                         () => {Fluttertoast.showToast(msg: 'Note deleted')});
 

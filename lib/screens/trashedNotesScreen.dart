@@ -25,7 +25,7 @@ class _TrashedNotesScreenState extends State<TrashedNotesScreen> {
 
   getDocumentLength(AsyncSnapshot<QuerySnapshot> snapshot) {
     if (snapshot.hasData) {
-      final List<DocumentSnapshot> documents = snapshot.data!.docs;
+      final List<DocumentSnapshot> documents = snapshot.data.docs;
       return documents.length;
     } else {
       return 0;
@@ -34,7 +34,7 @@ class _TrashedNotesScreenState extends State<TrashedNotesScreen> {
 
   getDocumentsItems(AsyncSnapshot<QuerySnapshot> snapshot, int index) {
     if (snapshot.hasData) {
-      final List<DocumentSnapshot> documents = snapshot.data!.docs;
+      final List<DocumentSnapshot> documents = snapshot.data.docs;
       return documents[index];
     } else {
       return 0;
@@ -143,9 +143,13 @@ class _TrashedNotesScreenState extends State<TrashedNotesScreen> {
                                                             getDocumentsItems(
                                                                     snapshot,
                                                                     index)[
-                                                                'description']
+                                                                'description'],
+                                                        'video':
+                                                            getDocumentsItems(
+                                                                snapshot,
+                                                                index)['video'],
                                                       });
-                                                      snapshot.data!.docs[index]
+                                                      snapshot.data.docs[index]
                                                           .reference
                                                           .delete()
                                                           .whenComplete(() => {
